@@ -1,0 +1,944 @@
+<?php
+
+$dir = dirname(__FILE__);
+require_once($dir . '/../include/util.php');
+$gPHPscript = __FILE__;
+
+if (mustlogon()) {
+  /* This can happen if the frame is left idle a long time */
+  return;
+}
+
+htmlHeader('Manipulate folders');
+
+require_once($dir . '/../include/db.php');
+require_once($dir . '/../include/emit_children.php');
+
+?>
+<script src="../js/browser.js" language="JavaScript" type="text/javascript"></script>
+<script src="../js/util.js" language="JavaScript" type="text/javascript"></script>
+<script src="../js/alert.js" language="JavaScript" type="text/javascript"></script>
+<script src="../js/ajax.js" language="JavaScript" type="text/javascript"></script>
+<?php enterJavascript(); ?>
+
+function getInfo(a)
+{
+  var table, summary, info;
+  var type, parent, id;
+
+  for (table = a; ; table = table.parentNode) {
+    if (!table) {
+      alert('Can\'t locate table for item');
+      return;
+    }
+    if (table.tagName == 'TABLE') {
+      break;
+  } }
+  summary = table.summary;
+  if (!summary) {
+    alert('Missing summary');
+    return;
+  }
+  info = summary.split(',');
+  if (info.length != 3) {
+    alert('Invalid info');
+  }
+  return { type:info[0], parent:info[1], id:info[2], a:a, table:table };
+}
+
+function getParentInfo(info)
+{
+  if (info.id == 1) {
+    return null;
+  }
+  var table = info.table;
+  var div   = table.parentNode;
+
+  if (div == null || div.tagName != 'DIV') {
+	alert('Missing DIV above table');
+    return null;
+  }
+  table = div.previousSibling;
+  if (!table || table.tagName != 'TABLE') {
+    alert('Missing TABLE before DIV');
+    return null;
+  }
+  return getInfo(table);
+}
+
+function getNameAnchor(element)
+{
+  var ret;
+
+  for (ret = element; ret != null; ret = ret.parentNode) {
+    switch (ret.tagName) {
+    case 'DIV':
+      ret = null;
+    case 'TR':
+    case 'TABLE':
+      break;
+    default:
+      continue;
+    }
+    break;
+  }
+  for (;; ret = ret.lastChild) {
+    if (ret == null) {
+      alert('Missing name anchor');
+      break;
+    }
+    if (ret.tagName == 'A') {
+      break;
+  } }
+  return ret;
+}
+
+// Children are denoted by a DIV following a table
+// No div implies for a folder children are unknown
+
+function addChildren()
+{
+  if (this.readyState == 4 && this.status == 200) {
+    var table    = this.imagematState;
+    var parent   = table.parentNode;
+	var nxt      = table.nextSibling;
+    var div      = document.createElement('div');
+	if (!nxt) {
+	  parent.appendChild(div);
+    } else {
+	  parent.insertBefore(div, nxt);
+ 	  if (nxt.tagName == 'DIV') {
+      	alert('Table unexpectedly has children');
+		parent.removeChild(nxt);
+	  }
+	}
+    var response = this.responseText;
+    if (response != '') {
+      div.innerHTML = response;
+    }
+    // alert(response);
+  }
+}
+
+function clickN(a) /* Click on Node */
+{
+  var tr       = null;
+  var node_img = null;
+  var indent   = 0;
+  var cnt      = 0;
+  var info, id;
+  var div, table, td, a, img, src;
+  var node_img, node_prefix, node_open, node_suffix;
+  var folder_img, folder_prefix, folder_open, folder_suffix;
+  var lth;
+
+  info = getInfo(a);
+  id   = info.id;
+
+  //alert('ClickOnNode(' + id + ')');
+
+  for (table = a; ; table = table.parentNode) {
+    if (!table) {
+      alert('Can\'t find table for node ' + id);
+      return;
+    }
+    if (table.tagName == 'TABLE') {
+      break;
+  } }
+  for (tr = table.firstChild; ; tr = tr.firstChild) {
+    if (!tr) {
+      alert('Missing TR');
+      return;
+    }
+    if (tr.tagName == 'TR') {
+	  break;
+  } }
+
+  for (td = tr.firstChild; ; td = td.nextSibling) {
+    if (!td) {
+      alert('Missing Icon TD');
+      return;
+    }
+    if (td.tagName != 'TD') {
+      alert('Missing TD');
+      return;
+    }
+    ++cnt;
+    a = td.firstChild;
+    if (!a || a.tagName != 'A') {
+      continue;
+    }
+    img = a.firstChild;
+    if (!img || img.tagName != 'IMG') {
+      continue;
+    }
+    src = img.src;
+    lth = src.length;
+    if (node_img == null) {
+	  if (9 < lth && src.substr(lth-8) == 'node.gif') {
+        node_prefix = src.substr(0, lth-10);
+        node_suffix = src.substr(lth-9);
+        node_open   = src[lth-10];
+        node_img    = img;
+        indent      = cnt;
+        continue;
+    } }
+    if (lth < 11 || 
+      (src.substr(lth-10) != 'folder.gif' &&
+       src.substr(lth-10) != 'symlnk.gif')) {
+   	  alert('Folder img src=' + src);
+      return;
+    }
+    folder_prefix = src.substr(0, lth - 11);
+    folder_suffix = src.substr(lth-10);
+    folder_open   = src[lth-11];
+    folder_img    = img;
+    break;
+  }
+
+  div = table.nextSibling;
+  switch (folder_open) {
+  case 'o':
+    /* Was open */
+    if (node_img != null) {
+      if (node_open != 'm') {
+        alert('Node open not m ' + node_img.src);
+        return;
+      }
+      node_img.src = node_prefix + 'p' + node_suffix;
+    }
+    folder_img.src = folder_prefix + 'c' + folder_suffix;
+    if (div && div.tagName == 'DIV') {
+      div.style.display ='none';
+	}
+    return;
+  case 'c':
+	/* Was closed */
+    if (node_img != null) {
+      if (node_open != 'p') {
+        alert('Node open not p ' + node_img.src);
+        return;
+      }
+      node_img.src = node_prefix + 'm' + node_suffix;
+    }
+    folder_img.src = folder_prefix + 'o' + folder_suffix;
+    if (div && div.tagName == 'DIV') {
+      div.style.display = '';
+      return;
+    }
+	break;
+  default:
+    alert('Invalid folder gif=' + folder_img.src);
+    return;
+  }
+
+  do_ajax(table, 'do_get_childinfo.php', 'id=' + id + '&indent=' + indent, addChildren);
+}
+
+function do_refresh(info)
+{
+  var a     = info.a;
+  var table = info.table;
+
+  // alert('refresh ' + info.id);
+
+  var div  = table.nextSibling;
+  var open = false;
+  if (div && div.tagName == 'DIV') {
+    table.parentNode.removeChild(div);
+  }
+  if (open) {
+    clickN(a);
+    clickN(a);
+} }
+
+function done_node()
+{
+  if (this.readyState == 4 && this.status == 200) {
+    var response = this.responseText;
+    if (response != '') {
+      alert(response);
+    }
+  }
+}
+
+// Refresh tree rooted at clicked on folder
+
+function done_tree()
+{
+  if (this.readyState == 4 && this.status == 200) {
+    var response = this.responseText;
+    if (response != '') {
+      alert(response);
+      return;
+    }
+    do_refresh(this.imagematState);
+  }
+}
+
+function erase_table(table)
+{
+  var div = table.parentNode;
+  if (!div || div.tagName != 'DIV') {
+    alert ('Can\'t find div for table being erased');
+    return;
+  }
+  var children = table.nextSibling;
+  if (children && children.tagName == 'DIV') {
+    // Remove children of node
+    div.removeChild(children);
+  }
+  // Remove node itself
+  div.removeChild(table);
+}
+
+function erase_referencing_symlinks(id)
+{
+  var tables = document.getElementsByTagName('TABLE');
+  var table, i, length;
+
+  length = tables.length;
+  for (i = 0; i < length; )  {
+    table = tables[i];
+    if (table.summary) {
+      info = getInfo(table);
+      if (info.type == 's' && info.id == id) {
+        erase_table(table);
+        if (tables.length < length) {
+          length = tables.length;
+          continue;
+    } } }
+    ++i;
+} }
+
+function done_delete_member()
+{
+  if (this.readyState == 4 && this.status == 200) {
+    var response = this.responseText;
+    if (response != '') {
+      alert(response);
+      return;
+    }
+    var info  = this.imagematState;
+
+    if (info.type == 'f') {
+      erase_referencing_symlinks(info.id);
+    }
+    erase_table(info.table);
+} }
+
+function done_rename_folder()
+{
+  if (this.readyState == 4 && this.status == 200) {
+    var response = this.responseText;
+    if (response != '') {
+      alert(response);
+      return;
+    }
+    var info = this.imagematState;
+    var a    = info.a;
+    var td;
+
+    for (td = a.parentNode; td.nextSibling; td = td.nextSibling);
+    a = td.firstChild;
+    a.textContent = info.name;
+  }
+}
+
+function append_open(table, a)
+{
+  if (table.tagName == 'TABLE') {
+	var div = table.nextSibling;
+    if (div && div.tagName == 'DIV') {
+	  if (div.style.display != 'none') {
+		var info = getInfo(table);
+		if (info.type != 'f') {
+		  return;
+		}
+		if (info.id != 1) {
+		  a.push(info.id);
+		}
+		for (var subtable=div.firstChild; subtable; subtable=subtable.nextSibling) {
+		  append_open(subtable, a);
+} } } } }
+
+function reopen(info, a)
+{
+  if (info.type != 'f') {
+    return;
+  }
+  var id     = info.id;
+  var length = a.length;
+  var table;
+  var i;
+
+  for (i = 0; i < length; ++i) {
+    if (a[i] == id) {
+      table = info.table;
+	  clickN(table);
+      if (info.parent == 1) {
+		clickN(table);
+	  }
+      a[i] = a[--length];
+      a.splice(length, 1);
+	  if (length > 0) {
+        var div = table.nextSibling;
+        if (div && div.tagName == 'DIV') {
+          for (table = div.firstChild; table; table = table.nextSibling) {
+			if (table.tagName == 'TABLE') {
+		      reopen(getInfo(table), a);
+	  }	} } }
+      return;
+} } }
+
+function done_move()
+{
+  if (this.readyState == 4) {
+	if (this.status == 200) {
+      var response = this.responseText;
+      if (response != '') {
+        alert(response);
+    } }
+    var root = document.getElementById('root');
+	var openFolders = new Array();
+    append_open(root, openFolders);
+    var div = root.nextSibling;
+    if (div && div.tagName == 'DIV') {
+      for (var subtree=div.firstChild; subtree; subtree=subtree.nextSibling) {
+        if (subtree.tagName == 'TABLE') {
+          info = getInfo(subtree);
+          if (info.type == 'f') {
+			do_refresh(info);
+    		reopen(info, openFolders);
+} } } } } }
+
+function done_copy()
+{
+  if (this.readyState == 4) {
+	if (this.status == 200) {
+      var response = this.responseText;
+      if (response != '') {
+        alert(response);
+    } }
+	do_refresh(this.imagematState);
+} }
+
+function do_delete_folder(info)
+{
+  do_ajax(info, 'do_delete_folder.php', 'id=' + info.id, done_delete_member);
+}
+
+function do_delete_tree(info)
+{
+  do_ajax(info, 'do_delete_folder.php', 'id=' + info.id + '&r=y', done_delete_member);
+}
+
+function do_add_folder(info)
+{
+  name = prompt('New folder name', '');
+  if (name == null ) {
+    return;
+  }
+  name = trim(name);
+  if (name == '') {
+    return;
+  }
+  do_ajax(info, 'do_add_folder.php', 'id=' + info.id + '&name=' + encodeURIComponent(name),  done_tree);
+}
+
+function do_add_link(info)
+{
+  // alert('add link under folder ' + info.id);
+  var name = prompt('Link name', '');
+  if (name == null ) {
+    return;
+  }
+  name = trim(name);
+  if (name == '') {
+    return;
+  }
+  var path = prompt('Path', '');
+  if (path == null ) {
+    return;
+  }
+  path = trim(path);
+  if (path == '') {
+    return;
+  }
+
+  do_ajax(info, 'do_add_link.php', 'id=' + info.id + '&name=' + encodeURIComponent(name) + '&path=' + encodeURIComponent(path),  done_tree);
+}
+
+function do_add_annotations(info)
+{
+  var setAnnotations = top.setAnnotations;
+  var lth  = top.setAnnotations_lth;
+
+  if (!setAnnotations || !lth) {
+    customAlert(
+      { title:'No annotations selected',
+        icon:'warn.gif',
+        body:'Please select the annotations you wish to add under this folder'
+      });
+    return;
+  }
+  do_ajax(info, 'do_add_annotations.php', 'id=' + info.id, done_tree);
+}
+
+function do_add_url(info)
+{
+  var url = prompt('URL', '');
+  if (url == null ) {
+    return;
+  }
+  url = trim(url);
+  if (url == '') {
+    return;
+  }
+  do_ajax(info, 'do_add_url.php', 'id=' + info.id + '&url=' + encodeURIComponent(url),  done_tree);
+}
+
+
+function change_name_class(element, className)
+{
+  var a = getNameAnchor(element);
+  
+  if (a) {
+    a.className= className;
+} }
+
+function do_clear_table(table)
+{
+  var div;
+
+  change_name_class(table, null);
+
+  div = table.nextSibling;
+  if (div && div.tagName == 'DIV') {
+    for (table = div.firstChild; table; table = table.nextSibling) {
+      if (table.tagName == 'TABLE') {
+        do_clear_table(table);
+} } } }
+
+function do_clear_ancestors(element)
+{
+  for (;;) {
+    if (!element) {
+      alert('Missed foldertree div');
+      return;
+    }
+    switch (element.tagName) {
+    case 'TABLE':
+      change_name_class(element, null);
+      break;
+    case 'DIV':
+      if (element.id == 'folderTree') {
+        return;
+      }
+      if (element.previousSibling) {
+        element = element.previousSibling;
+        continue;
+      }
+      break;
+    }
+    element = element.parentNode;
+} }
+
+function do_clear(info)
+{
+  do_clear_table(info.table);
+}
+
+function do_mark_node(info)
+{
+  do_clear(info);
+  do_clear_ancestors(info.table);
+  change_name_class(info.table, 'mark');
+}
+
+
+function do_movecopy(target_info, move)
+{
+  if (target_info.id == 1) {
+	alert('Can\'t move or copy anything under the root');
+	return;
+  }
+
+  var as       = document.getElementsByTagName('a');
+  var transmit = [];
+  var id       = target_info.id;
+  var info, type, parent, source_id;
+  var noop = false;
+
+  if (as) {
+    var source_info, i, length;
+
+    length = as.length;
+    for (i = 0; i < length; ++i) {
+      a    = as[i];
+      if (a.className == 'mark') {
+        source_info = getInfo(a);
+        parent      = source_info.parent;
+        if (parent == id) {
+		  noop = true;
+		} else {
+    	  // otherwise source already under target - noop so ignore
+          type      = source_info.type;
+    	  source_id = source_info.id;
+  		  if (type == 'f') {
+			if (source_info.parent < 2 && move) {
+			    customAlert(
+			  	  { title:'Illegal move',
+				    icon:'error.png',
+				    body:'You may not move home folders or the root',
+				    width:'600px'
+				  });
+			    return;
+			}
+	        // Can't move a source folder to itself or any folder under itself
+            for (info = target_info; info != null; info = getParentInfo(info)) {
+	          if (info.id == source_id) {
+			    customAlert(
+			  	  { title:'Illegal copy',
+				    icon:'error.png',
+				    body:'You may not move a folder under itself',
+				    width:'600px'
+				  });
+			    return;
+		  } } }
+		  transmit.push( {t:type, p:parent, i:source_id } );
+		}
+		a.className = null;
+  } } }
+
+  if (transmit.length == 0) {
+    var msg = (move ? 'move' : 'copy');
+
+    msg = (noop ? 'This ' + msg + ' would change nothing' : 'Nothing marked to ' + msg);
+    customAlert(
+	  { title:'Null operation',
+		icon:'warn.png',
+		body:msg,
+		width:'600px'
+	  });
+    return;
+  }
+
+  var encoded = encodeURIComponent(JSON.stringify(transmit));
+
+  if (move) {
+    do_ajax(target_info, 'do_movecopy.php', 'id=' + id + '&move=y&json=' + encoded, done_move );
+    return;
+  }
+  do_ajax(target_info, 'do_movecopy.php', 'id=' + id + '&json=' + encoded, done_copy );
+}
+
+function do_move(target_info)
+{
+  do_movecopy(target_info, true);
+}
+
+function do_copy(target_info)
+{
+  do_movecopy(target_info, false);
+}
+
+function do_help_folder(info)
+{
+  customAlert(
+    { title:'Manipulate folders',
+      icon:false,
+      body:'To insert URL provide full URL<p>To insert LINK use unix path format<p>To insert annotations select them first',
+      width:'600px',
+      html:true
+    });
+  return true;
+}
+
+function do_redescribe_folder(info)
+{
+  var desc = prompt('New description for folder', '');
+
+  if (desc == null) {
+    return;
+  }
+  desc = trim(desc);
+  do_ajax(info, 'do_redescribe_folder.php', 'id=' + info.id + '&desc=' + encodeURIComponent(desc), done_node);
+}
+
+function done_describe()
+{
+  if (this.readyState == 4 && this.status == 200) {
+    var response = this.responseText;
+    var info     = this.imagematState;
+
+    customAlert(
+    { title:'Description of  folder ' + info.id,
+      icon:false,
+      body:response,
+      width:'200px',
+      buttons:{
+        Change:do_redescribe_folder,
+        Help:do_help_folder,
+        Cancel:null
+      },
+      state:info
+    });
+  }
+}
+
+function do_describe_folder(info)
+{
+  do_ajax(info, 'do_describe_folder.php','id=' + info.id, done_describe);
+}
+
+function do_rename_folder(info)
+{
+  var name = prompt('New name for folder ' + info.id, '');
+
+  if (name == null) {
+    return;
+  }
+  name = trim(name);
+  if (name == '') {
+    return;
+  }
+  info.name = name;	// Add to the info
+  do_ajax(info, 'do_rename_folder.php', 'id=' + info.id + '&name=' + encodeURIComponent(name), done_rename_folder);
+}
+
+function do_delete_symlink(info)
+{
+  do_ajax(info, 'do_delete_symlink.php', 'parent=' + info.parent + '&id=' + info.id, done_delete_member);
+}
+
+function do_help_symlink(info)
+{
+  alert('help with symlink operations on ' + info.parent + '->' + info.id);
+}
+
+function clickOnFolder1(a, isName)
+{
+  var info = getInfo(a);
+  var id   = info.id;
+
+  if (info.type == 's' && !isName) {
+    var parent = info.parent;
+
+    customAlert(
+      { title:'Manipulate symbolic link',
+        icon:'question.png',
+        body:'What action is to be performed on this link',
+        width:'200px',
+        buttons:{
+          Delete:do_delete_symlink,
+          Mark:do_mark_node,
+          Clear:do_clear,
+          Help:do_help_symlink,
+          Cancel:null
+        },
+        columns:4,
+        state:info
+      });
+    return;
+  }
+  if (id == 1) {
+    customAlert(
+      { title:'Manipulate root folder',
+        icon:'question.png',
+        body:'What action is to be performed on the root folder',
+        width:'200px',
+        buttons:{
+          Clear:do_clear,
+          Refresh:do_refresh,
+          Cancel:null
+        },
+		columns:4,
+        state:info
+      });
+    return;
+  }
+
+  customAlert(
+    { title:'Manipulate folder',
+      icon:'question.png',
+      body:'What action is to be performed on this folder',
+      width:'200px',
+      buttons:{
+        "Add folder":do_add_folder,
+        "Add link":do_add_link,
+        "Add Annotate":do_add_annotations,
+        "Add url":do_add_url,
+        Rename:do_rename_folder,
+        Describe:do_describe_folder,
+        Delete:do_delete_folder,
+        "Delete tree":do_delete_tree,
+        Mark:do_mark_node,
+        Move:do_move,
+        Copy:do_copy,
+        Clear:do_clear,
+        Refresh:do_refresh,
+        Help:do_help_folder,
+        Cancel:null
+      },
+      columns:4,
+      width:400,
+      state:info
+    });
+}
+
+function clickF(a)	/* Click on Folder icon */
+{
+  clickOnFolder1(a, false);
+} 
+
+function clickD(a)	/* Click on directory name */
+{
+  clickOnFolder1(a, true);
+}
+
+function do_remove_annotation(info)
+{
+  do_ajax(info, 'do_remove_annotation.php', 'parent=' + info.parent + '&id=' + info.id, done_delete_member);
+}
+
+function do_help_annotation(info)
+{
+  alert('help with annotation operations on ' + info.parent + '->' + info.id);
+}
+  
+function clickA(a)
+{
+  var info   = getInfo(a);
+
+  customAlert(
+    { title:'Manipulate annotation',
+      icon:'question.png',
+      body:'What action is to be performed on this annotation',
+      width:'200px',
+      buttons:{
+        Remove:do_remove_annotation,
+        Mark:do_mark_node,
+        Clear:do_clear,
+        Help:do_help_annotation,
+        Cancel:null
+      },
+      columns:4, 
+      state:info
+    });
+}
+
+function showRightFrame(link)
+{
+  if (self != top) {
+    var right = top.document.getElementById('annotateFrame')
+    if (right) {
+      right.src = link;
+} } }
+
+function clickT(a)	/* Annotation title */
+{
+  var info   = getInfo(a);
+
+  showRightFrame('../annotate/images.php?annotation_id=' + info.id + '&url0=' +
+                 '../annotate/simple_view.php%3Fannotation_id=' + info.id);
+}
+
+function do_remove_url(info)
+{
+  do_ajax(info, 'do_remove_url.php', 'parent=' + info.parent + '&id=' + info.id, done_delete_member);
+}
+
+function do_help_url(info)
+{
+  alert('help with url operations on ' + info.parent + '->' + info.id);
+}
+  
+function clickU(a)	/* Click on URL icon */
+{
+  var info   = getInfo(a);
+
+  customAlert(
+    { title:'Manipulate url',
+      icon:'question.png',
+      body:'What action is to be performed on this url',
+      width:'200px',
+      buttons:{
+        Remove:do_remove_url,
+        Mark:do_mark_node,
+        Clear:do_clear,
+        Help:do_help_url,
+        Cancel:null
+      },
+      columns:4,
+      state:info
+    });
+  return true;
+}
+
+function clickL(a)	/* Click on URL Link */
+{
+  showRightFrame(a.textContent);
+}
+
+<?php exitJavascript(); ?>
+<link rel='stylesheet' href="../css/style.css" />
+<link rel='stylesheet' href="../css/iframe.css" />
+<link rel='stylesheet' href="../css/alert.css" />
+<style>
+#folderTree td {
+  font-size: 10pt; 
+  font-family: verdana,helvetica; 
+  white-space:nowrap;
+}
+#folderTree a {
+  text-decoration: none;
+  color: blue;
+}
+.alertBtns table {
+  display: block;
+  width: 100%;
+  border-spacing: 2px 2px;
+}
+.alertBtns td {
+  padding: 10px 1px 10px 1px;
+  background-color: #00FF00;
+}
+.mark {
+  background-color: #00FF00;
+}
+</style>
+</head>
+<body>
+
+<div id=folderTree>
+<div style="display:block;">
+<table id=root summary="f,0,1" cellspacing=0 cellpadding=0 border=0 width="100%"><tbody><tr><td valign=top><a onclick="clickF(this)"><img border=0 src="../images/project/ofolder.gif" /></a></td><td width="100%" valign="middle"><a onclick="clickD(this)">/</a></td></tr></tbody></table><div><?php
+
+if (!DBconnect()) {
+  goto done;
+}
+
+$query =
+'select 0 as isSymlink, 1 as parent_folder_id, folder_id, name
+   from folders
+  where parent_folder_id = 1';
+
+$all = getparameter('all');
+if (!isset($all)) {
+  $query .= '
+    and creator_user_id = ' . DBstring($gUserid);
+}
+
+emit_children(0, 1, $query);
+?></div></div></div>
+
+<?php
+
+close:
+DBclose();
+done:
+bodyFooterFilename();
+?>
+</body>
+</html>

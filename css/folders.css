@@ -1,0 +1,70 @@
+#folderTree td {
+  font-size: 9pt; 
+  font-family: Tahoma, Geneva, sans-serif; 
+  color: #333;
+  white-space:nowrap;
+}
+#folderTree a {
+  text-decoration: none;
+  color: #333;
+}
+.alertBtns table {
+  display: block;
+  width: 100%;
+  border-spacing: 2px 2px;
+}
+.alertBtns td {
+  padding: 10px 1px 10px 1px;
+  background-color: #00FF00;
+}
+.mark {
+  background-color: #00FF00;
+}
+
+.projectMenu {
+    position:absolute;
+	margin: 0;
+	padding: 0;
+	z-index: 1;
+}
+
+.projectMenu table {
+	position:absolute;
+	margin: 0;
+	padding: 0;
+	height: 30px;
+	border: 1px solid black;
+	/* border-collapse: collapse; */
+	z-index: 1;
+}
+
+.projectMenu th {
+	margin: 0;
+	padding: 0;
+	text-align: center;
+	background: #981b1e;
+	color: #ffffff;
+	z-index: 1;
+}
+
+.projectMenu td {
+	margin: 0;
+	padding: 0;
+	background: #c0b874;	
+	z-index: 1;
+	text-align: center;
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 12px;
+	text-decoration: none;
+	height: 100%;
+	width: 130px;
+	display: block;
+	color: #ffffff;
+	z-index: 1;
+}
+
+.projectMenu td:hover {
+	background: #dddddd;
+	color: #000;	
+}
+

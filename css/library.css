@@ -1,0 +1,352 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/* this controls the layout of all three panels */
+#triplePane {
+	position: relative;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+    width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	vertical-align: top;
+}
+
+/* this controls the header links */
+.navHead h2 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #990000;
+	width: 100%;
+	font-size: 16px;
+	font-style: strong;
+}
+
+.navHead a:link {
+	text-decoration: none;
+	color: #990000;
+}
+
+.navHead a:hover {
+	color: #990000;
+}
+
+
+.navHead a:visited {
+	text-decoration: none;
+	color: #990000;
+}
+
+
+.navHead a:active {
+	text-decoration: none;
+	color: #990000;
+}
+
+/* this controls the left side panel */
+.navigationFrame {
+	position: absolute;
+	background-color: #fff;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	height: 95%;
+	width: /*15%;*/ 22%;
+	border: 1;
+	overflow: auto;
+}
+
+/* this controls text styles and link styles in navigation frame (left panel)*/
+.navText h2 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 16px;
+	font-style: strong;
+	
+}
+
+.navText h3 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 14px;
+	font-style: strong;	
+}	
+
+.navText p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 13px;
+	color: #333;
+	/*line-height: 8px;*/
+	padding-bottom: 0;
+	text-indent: hanging;
+	word-wrap: normal;
+	display: block;
+}
+
+.navText a:link {
+	text-decoration: none;
+	color: #333;
+}
+
+.navText a:hover {
+	color: #333;
+}
+
+
+.navText a:visited {
+	text-decoration: none;
+	color: #333;
+}
+
+
+.navText a:active {
+	text-decoration: none;
+	color: #333;
+}
+
+.navText hr {
+	color: #ccc;
+	background-color: #ccc;
+	height: 1px;
+	border: 0;
+	}
+
+/* this controls the center panel */
+
+
+.mainFrame {
+	position: relative;
+	background-color: #fff;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	height: 95%;
+	width: /*60%;*/54%;
+	border: 1;
+	margin-left: /*16%;*/ 23%;
+	overflow: auto;
+}
+
+/* this controls the box at top of frame for breadcrumb nav and icons */
+.mainHeader {
+	position: relative;
+	text-align: right;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+
+
+.mainText p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 13px;
+	color: #333;
+	word-wrap: normal;
+	display: block;
+}
+
+/*manages introductory text*/
+.mainIntro {
+	width: 70%;
+	padding: 5px;
+	position: absolute;
+	margin-left: 10%;
+}
+
+.mainIntro p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 14px;
+	color: #333;
+	word-wrap: normal;
+	display: block;
+}
+
+.mainIntro h3 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 16px;
+}
+
+.mainIntro a:link {
+	text-decoration: none;
+	color: #C00;
+}
+
+.mainIntro a:hover {
+	color: #000000;
+	font-style: bold;
+}
+
+
+.mainIntro a:visited {
+	text-decoration: none;
+	color: #C00;
+}
+
+.mainIntro a:active {
+	text-decoration: none;
+	color: #C00;
+}
+
+.mainIntro ul {
+	font-family:Tahoma, Geneva, sans-serif;
+}
+
+.mainIntro li {
+	font-size: 13px;
+}
+
+/*manages image and annotation placement */
+/* changed width from 45% to 25%; added height at 100%; changed position to relative all to fit in three panel structure */
+.mainImage {
+	padding-left: 5px;
+	position: relative;
+	float: left;
+	width: 25%;
+	height: 100%;
+}
+/* added margin-top: -12px, changed position from absolute to relative, changed width from 45% to 20% - all to fit in three panel structure */
+.mainTemplate {
+	font-family: Tahoma, Geneva, sans-serif;
+	padding-top: 0px;
+	font-size: 13px;
+	width: 25%;
+	position: relative;
+	float: right;
+	display: block;
+}
+
+.mainTemplate p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 13px;
+	color: #333;
+	word-wrap: normal;
+	display: block;
+}
+
+.mainTemplate h3 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 13px;
+}
+.mainAnno {
+	width: 35%;
+/*	padding-right: 50px;*/
+	position: absolute;
+	margin-left: /*50%*/ 30%;
+}
+
+.mainAnno p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 13px;
+	color: #333;
+	word-wrap: normal;
+	display: block;
+}
+
+.mainAnno h3 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 13px;
+}
+
+/* manages Project content */
+
+/* this image ONLY appears when Project is invoked in library. When user switches to annotation, image shrinks from 45% to 25% */
+.projectImage {
+	padding-left: 5px;
+	position: relative;
+	float: left;
+	width: 45%;
+	height: 100%;
+}
+
+/* manages Title, Description, Associated Annotations in Project frame */
+.projectText {
+	position: relative;
+	float: right;
+	width: 40%;
+	height: 100%;
+	margin-right: 10%;
+}
+
+.mainProject {
+	width: 95%;
+	padding: 5px;
+	position: absolute;
+	margin-left: 0;
+}
+
+.mainProject p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 13px;
+	color: #333;
+	word-wrap: normal;
+	display: block;
+}
+
+.mainProject h3 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 13px;
+}
+
+.mainProject a:link {
+	text-decoration: none;
+	color: #333;
+}
+
+.mainProject a:hover {
+	color: #C00;
+}
+
+.mainProject a:visited {
+	text-decoration: none;
+	color: #333;
+}
+
+.mainProject a:active {
+	text-decoration: none;
+	color: #333;
+}
+	
+/* this controls the right side panel */
+.metaFrame {
+	position: relative;
+	background-color: #fff;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	height: 95%;
+	width: /*15%;*/ 14%;
+	border: 1;
+	overflow: auto;
+	
+}
+
+/* this controls text in the right frame */
+.metaText h3 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 14px;
+	
+}
+	
+.metaText p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 13px;
+	color: #333;
+	word-wrap: normal;
+	display: block;
+}
+
+.metaText hr {
+	color: #ccc;
+	background-color: #ccc;
+	height: 1px;
+	border: 0;
+	}

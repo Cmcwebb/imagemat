@@ -1,0 +1,856 @@
+<!DOCTYPE HTML>
+<?php
+
+$gPHPscript = __FILE__;
+$dir = dirname(__FILE__);
+require_once($dir . '/../include/boilerplate.php');
+require_once($dir . '/../include/util.php');
+
+if (mustlogon()) {
+  /* Should never see this page if not logged on but still */
+  return;
+}
+
+function hasContent($title, $content)
+{
+  if (!isset($title) || !isset($content)) {
+	if (isset($content)) {
+      javascriptAlert(null, null, 'An annotation needs a title', 'Error');
+    } else if (isset($title)) {
+      javascriptAlert(null, null, 'An annotation needs content', 'Error');
+    } else {
+      javascriptAlert(null, null, 'An annotation needs a title and content', 'Error');
+    }
+	return false;
+  }
+  return true;
+}
+
+$similar    = getpost('similar');
+if (isset($similar)) {
+  // Show selected similar annotation
+  $annotation_id = $similar;
+  $version       = null;
+  $archive       = 'N';
+  $mode          = 'v';
+} else {
+  $annotation_id = getparameter('annotation_id');
+  $version       = getparameter('version');
+  $maxversion    = getpost('maxversion');
+  $annotation_deleted = getpost('annotation_deleted');
+  $archive       = getpost('archive');
+  if (!isset($archive)) {
+	$archive = 'N';
+  }
+  $mode          = getpost('mode');
+  if (!isset($mode)) {
+	$mode = '';
+} }
+if (!isset($annotation_id)) {
+  header('Location: ' . dirname($_SERVER['REQUEST_URI']) . '/search.php');
+  return;
+}
+$next_id   = getparameter('next_id');
+if ($next_id == -3) {
+  header('Location: ' . dirname($_SERVER['REQUEST_URI']) . '/listsetAnnotations.php?annotation_id=' . $annotation_id . '&href=update_annotation.php' . urlencode('?'));
+
+  return;
+}
+
+if (isset($version)) {
+  if ($version == '') {
+    $version = null;
+  }
+} else {
+  $version = null;
+}
+$language_code = getpost('language_code');
+
+htmlHeader('Update annotation');
+
+require_once($dir . '/../include/alert.php');
+require_once($dir . '/../include/db.php');
+require_once($dir . '/../include/urls.php');
+require_once($dir . '/../include/simple_view.php');
+require_once($dir . '/../include/annotations.php');
+require_once($dir . '/../include/insert_markup.php');
+require_once($dir . '/../include/template.php');
+require_once($dir . '/../include/tags.php');
+require_once($dir . '/../include/archive.php');
+
+srcStylesheet(
+  '../css/style.css',
+  '../css/iframe.css'
+  //'../css/annotation.css'
+);
+srcJavascript(
+  '../js/util.js',
+  '../js/enterkey.js',
+  '../js/fullwidth.js',
+  '../js/edit.js',
+  '../js/annotate.js',
+  '../js/images.js',
+  '../../tools/ckeditor/ckeditor.js'
+);
+enterJavascript();
+?>
+
+function isDirtyAnnotation()
+{
+  if (old_draft != new_draft) {
+	return true;
+  }
+  var data = [];
+  getFormData('form', data);
+
+  var length = data.length;
+
+  if (old.length != length) {
+    alert('Unexpected form length change');
+    return true;
+  }
+  for (var name in data) {
+    switch (name) {
+	case 'minor':
+	case 'languages':
+    case 'editor1':
+		continue;
+	}
+	if (data[name] != old[name]) {
+	  return true;
+  } }
+	
+  var editor = CKEDITOR.instances['editor1'];
+
+  if (editor) {
+    // Bug in CKEditor adds \n at end of data
+    var newdata = trim(editor.getData());
+    var olddata = old['editor1'];
+    if (newdata != olddata) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function update(force)
+{
+  if (!checkEdit()) {
+    return false;
+  }
+  var dirtyAnnotation = isDirtyAnnotation();
+  var image_data1     = sendImageData();
+  if (!dirtyAnnotation && !image_data1) {
+    if (force) {
+      customAlert( {title:'Information unchanged', icon:'warn.png', body:'The annotation has not been changed. Therefore there is no point in attempting to update it' } );
+      return false;
+  } }
+  var form = document.getElementById('form');
+  if (image_data1) {
+	addhidden(form, 'dirtyImages', JSON.stringify(image_data1));
+  }
+  if (dirtyAnnotation) {
+    addhidden(form, 'dirtyAnnotation','Y');
+  }
+  return true;
+}
+
+function reset_form()
+{
+  CKEDITOR.instances['editor1'].setData(old['editor1']);
+}
+
+function form_submit()
+{
+  var form   = document.getElementById("form");
+  form.submit();
+}
+
+function add_next(next_id)
+{
+  var form   = document.getElementById("form");
+
+  addhidden(form, 'next_id', '' + next_id);
+  form.submit();
+}
+
+function clickNext()
+{
+  if (!update(false)) {
+    return false;
+  }
+  add_next(-1);
+}
+
+function clickPrev()
+{
+  if (!update(false)) {
+    return false;
+  }
+  add_next(-2);
+}
+
+function clickGoto()
+{
+  if (!update(false)) {
+    return false;
+  }
+  add_next(-3);
+}
+
+function loaded()
+{
+  disableEnterKey('form');
+  showImages();
+  old = [];
+  getFormData('form', old);
+  label_frame_button();
+}
+
+function version_change(select)
+{
+  if (select.selectedIndex < 0) {
+    alert('No version selected');
+  } else {
+    var form   = document.getElementById('form');
+    var option = select.options[select.selectedIndex];
+    var mode   = document.getElementById("mode");
+    addhidden(form, 'archive', ((option.value == '') ? 'N' : 'Y'));
+    if (mode) {
+	  mode.value = 'v';
+    }
+    /* We will start re-entry */
+    form.submit();
+} }
+
+// Stupid function used to avoid two commit buttons
+
+function setDraft(value)
+{
+  new_draft = value;
+  if (update(true)) {
+    var form = document.getElementById('form');
+    addhidden(form, 'draft', value);
+	form.submit();
+  }
+}
+
+function preview_draft()
+{
+  setDraft('Y');
+}
+
+function preview_save()
+{
+  setDraft('S');
+}
+
+function preview_publish()
+{
+  setDraft('N');
+}
+
+function clickDelete()
+{
+  var form = document.getElementById('form');
+  var mode = document.getElementById("mode");
+  if (mode) {
+    mode.value = 'x';
+    form.submit();
+  }
+}
+
+function clickDuplicate()
+{
+  duplicateImages();
+  submitPost({ action:'create_annotation.php',
+               parameters:{ 
+                 clone_id:annotation_id,
+                 clone_version:version,
+                 mode:'d',
+             } } );
+}
+
+function clickTranslate()
+{
+  var left  = top.frames[0];
+  var right = top.frames[1];
+
+  left  = left.frameElement;
+  right = right.frameElement;
+
+  right.style.width   = '45.5%';
+  left.style.width    = '43.5%';
+  left.style.display  = '';
+  right.style.display = '';
+
+  submitPost({ action:'view1.php',
+			   parameters:{
+				 annotation_id:annotation_id,
+                 version:version,
+				 archive:archive,
+				 onRight:0,
+			   },
+			   target:'imageFrame'
+			 } );
+
+  duplicateImages();
+  submitPost({ action:'create_annotation.php',
+               parameters:{ 
+                 clone_id:annotation_id,
+                 clone_version:version,
+				 clone_language:language,
+                 mode:'t' 
+               }
+              } );
+}
+
+<?php
+exitJavascript();
+echo '
+</head>
+<body class="imageFrame" onload="loaded()">
+';
+
+if (!DBconnect()) {
+  goto done;
+}
+
+$sql_annotation_id = DBnumber($annotation_id);
+
+if ($mode == 'x') {
+    $query = 
+'update annotations
+   set annotation_deleted = 1
+ where annotation_id      = ' . $sql_annotation_id;
+
+    $ret = DBquery($query);
+    if (!$ret) {
+	  goto close;
+    }
+    echo '<h3>Annotation ', htmlspecialchars($annotation_id), ' deleted</h3>';
+    $mode = '';
+	goto proceed;
+}
+
+$template_code  = getpost('template_code');
+$template       = getpost('template');
+if (!isset($template)) {
+  $template = array();
+}
+$title         = getpost('title');
+$minor          = getpost('minor');
+$tags           = getpost('tags');
+$content       = getpost('editor1');
+$language_codes = getpost('language_codes');
+$modifier_user_id = getpost('modifier_user_id');
+$creator_user_id  = getpost('creator_user_id');
+$refresh        = getpost('refresh');
+$draft          = getpost('draft');
+
+$ok             = true;
+
+$dirtyAnnotation = getpost('dirtyAnnotation');
+$dirtyImages     = getpost('dirtyImages');
+if (isset($dirtyAnnotation) || isset($dirtyImages)) {
+  // Do update
+  if (!hasContent($title, $content)) {
+	goto retry;
+  }
+  if (!DBatomic()) {
+    goto close;
+  }
+  if (isset($minor) && $minor != 'Y') {
+    $minor = null;
+  }
+  if (isset($dirtyAnnotation)) {
+	$ret = archive_annotation($annotation_id, $maxversion, $minor);
+	if ($ret < 0) {
+	  goto close;
+	}
+	if ($ret != 0) {
+	  goto retry;
+	}
+
+	switch($draft) {
+	case 'S':	// Save
+	case 'Y':	// Draft
+	  $draft1 = $draft;
+	  break;
+	default:
+	  $draft1 = null;
+	}
+
+    $query = 
+'update annotations
+   set draft           = ' . DBstringC($draft1) . '
+       language_code   = ' . DBstringC($language_code) . '
+       title           = ' . DBstringC($title) . '
+       content         = ' . DBstringC($content) . '
+       template_code   = ' . DBstringC($template_code) . '
+       tags            = ' . DBstringC($tags) . '
+       annotation_deleted = null,
+       modifier_user_id= ' . DBstringC($gUserid) . '
+       modified        = utc_timestamp()
+ where annotation_id   = ' . $sql_annotation_id;
+
+    $ret = DBquery($query);
+    if (!$ret) {
+	  goto close;
+    }
+
+    $query = 
+'update fulltexts
+   set ftitle          = ' . DBstringC($title) . '
+       fcontent        = ' . DBstring(plainText($content)) . '
+ where annotation_id   = ' . $sql_annotation_id;
+
+    $ret = DBupdate1($query);
+    if (!$ret) {
+      goto close;
+    }
+
+    update_tags($tags, $annotation_id, 'annotation_id', 'tags');
+
+    $query = 
+'delete from annotationslanguages
+ where annotation_id = ' . $sql_annotation_id;
+
+    DBquery($query);
+
+    insert_annotationslanguages($annotation_id, $language_codes);
+
+    if ($template_code != '') {
+      $query = 
+'delete from template_' . $template_code . 's
+  where annotation_id = ' . $sql_annotation_id;
+
+      DBquery($query);
+
+      insert_template($annotation_id, $template_code, $template);
+  } }
+  if (isset($dirtyImages)) {
+    $image_data = json_decode($dirtyImages);
+    if (!isset($image_data)) {
+      echo '<h3>Can\'t decode image data!!</h3><p>',
+           htmlspecialchars($dirtyImages);
+    } else {
+  	  $ret = update_images($annotation_id, $image_data, $minor);
+	  if ($ret < 0) {
+	    goto close;
+	  }
+  } }
+  DBcommit();
+  if (!isset($next_id)) {
+    if (isset($dirtyAnnotation)) {
+      if (isset($dirtyImages)) {
+        echo '
+<h3>Updated Annotation and Images</h3>';
+	  } else {
+	    echo '
+<h3>Updated Annotation</h3>';
+	  }
+	} else {
+	  echo '
+<h3>Updated Images</h3>';
+	}
+    showSimpleView($annotation_id, null, 'N');
+proceed:
+    echo '
+<p>
+<form id=form method="post" action=update_annotation.php >';
+    hidden('annotation_id');
+    hidden('version');
+    hidden('archive');
+
+    echo '
+<input type="submit" value="Edit" />';
+    $setAnnotations = getSetAnnotations();
+    if ($setAnnotations != null) {
+      $size = count($setAnnotations);
+      if ($size > 0) {
+        if ($annotation_id != $setAnnotations[$size-1]) {
+          echo '
+<input type="button" value="Next" onclick="add_next(-1)" />';
+        }
+        if ($annotation_id != $setAnnotations[0]) {
+          echo '
+<input type="button" value="Prev" onclick="add_next(-2)" />';
+        }
+        echo '
+<input type="button" value="Goto" onclick="add_next(-3)" />';
+      }
+    }
+    echo '
+</form>';
+
+    goto close;
+} } 
+
+if (isset($next_id)) {
+  switch ($next_id) {
+  case -1:	// Goto next
+    $setAnnotations = getSetAnnotations();
+    if (!isset($setAnnotations)) {
+      $next_id = null;
+    } else {
+      $setAnnotations_lth = count($setAnnotations);
+      for ($i = $setAnnotations_lth-1; 0 <= --$i; ) {
+        if ($setAnnotations[$i] == $annotation_id) {
+          break;
+      } }
+      $next_id = $setAnnotations[$i+1];
+    }
+    break;
+  case -2:	// Goto prev
+    $setAnnotations = getSetAnnotations();
+    if (!isset($setAnnotations)) {
+      $next_id = null;
+    } else {
+      $setAnnotations_lth = count($setAnnotations);
+      for ($i = 1; $i < $setAnnotations_lth; ++$i) {
+        if ($setAnnotations[$i] == $annotation_id) {
+          break;
+      } }
+      $next_id = $setAnnotations[$i-1];
+    }
+    break;
+  }
+  $annotation_id = $next_id;
+  $version       = null;
+  $refresh       = null;
+}
+
+retry:
+$sql_annotation_id = DBnumber($annotation_id);
+
+switch ($mode) {
+case 'v':
+case 's':
+  $refresh = null;
+}
+
+if (!isset($refresh)) {
+  $row = read_extended_annotation($annotation_id, $version, $archive);
+  if (!isset($row)) {
+    goto close;
+  }
+  foreach ($row as $colname => $value) {
+    $$colname = $value;
+  }  
+
+  // Passed in by bookmarklet
+  $urls  = getpost('urls');
+  $htmls = getpost('htmls');
+  if (isset($urls)) {
+	if (!isset($htmls)) {
+    	$htmls = array();
+  }	}
+  /* Avoiding needing to connect in images.php saves one connection */
+  if (!build_image_data($annotation_id, $version, $archive, false, null, $urls, $htmls)) {
+    goto close;
+  }
+} else if ($template_code != '' && $refresh != $template_code) {
+  $template = read_template($annotation_id, $version, $archive, $template_code);
+  if (!isset($template)) {
+    goto close;
+} }
+
+enterJavascript();
+echo '
+var annotation_id = ', htmlspecialchars($annotation_id), ';
+var version       = ', htmlspecialchars($version), ';
+var archive       = "', htmlspecialchars($archive), '";
+var language      = \'', htmlspecialchars($language_code), '\';
+var old           = null;
+var old_draft     = \'',(isset($annotation_deleted) ? 'X' : (isset($draft) ? $draft : 'N')), '\';
+var new_draft     = old_draft;';
+
+?>
+function getAnnotationId()
+{
+  return annotation_id;
+}
+<?php
+
+exitJavascript();
+
+require_once($dir . '/../include/language.php');
+
+if ($template_code != '') {
+  $refresh = $template_code;
+} else {
+  $refresh = 'yes';
+}
+if (!isset($maxversion)) {
+  $query =
+'select version,annotation_deleted
+  from annotations
+ where annotation_id = ' . DBnumber($annotation_id);
+
+  $ret = DBquery($query);
+  if (!$ret) {
+    goto close;
+  }
+  $row      = DBfetch($ret);
+  if (!$row) {
+    javascriptAlert( 'Annotation deleted', 'warn.png', 'The annotation you are attempting to update has been deleted');
+	goto close;
+  }
+  if (isset($row['annotation_deleted'])) {
+	$annotation_deleted = $row['annotation_deleted'];
+    javascriptAlert( 'Annotation deleted', 'warn.png', 'The annotation you are updating is flagged for deletion');
+  }
+  $maxversion = $row['version'];
+}
+if (isset($_SESSION['imageMAT_language_code2'])) {
+  $mylanguage = $_SESSION['imageMAT_language_code2'];
+} else {
+  $mylanguage = '';
+}
+?>
+<form id=form name=form action="update_annotation.php" method="post">
+<input id=mode type=hidden name=mode value=y />
+<?php
+hidden('annotation_id');
+hidden('modifier_user_id');
+hidden('creator_user_id');
+hidden('archive');
+hidden('version');
+hidden('maxversion');
+hidden('annotation_deleted');
+hidden('refresh');
+?>
+<table class="iframetable">
+<tr>
+<?php
+if (isset($annotation_deleted)) {
+  echo '
+<td>DELETED</td>
+<td align=right>DELETED</td>';
+} else {
+  switch ($draft) {
+  case 'Y':
+    echo '
+  <td><strong>DRAFT</strong></td>
+  <td align=right><strong>DRAFT</strong></td>';
+    break;
+  case 'S':
+    echo '
+  <td><strong>SAVED</strong></td>
+  <td align=right><strong>SAVED</strong></td>';
+    break;
+  default:
+    echo '
+  <td><strong>PUBLISHED</strong></td>
+  <td align=right><strong>PUBLISHED</strong></td>';
+} }
+?>
+</tr>
+
+<!-- Annotation ID/version code can be replaced here -->
+<tr>
+<td align="right">Language:</td>
+<td><?php annotation_language_code($language_code, false); ?>
+</td>
+</tr>
+<tr>
+<td align="right">Title:</td>
+<td><input type="text" id="title" name="title" size="50" maxlength="255" value="<?php echo htmlspecialchars($title); ?>"/>
+</td>
+</tr>
+<tr>
+<td align=right>Tags:</td>
+<td><input type="text" name="tags" size="50" maxlength="255" value="<?php echo htmlspecialchars($tags); ?>"/>
+</td>
+</tr>
+<tr>
+<td align=right>Template:</td>
+<td>
+<?php
+select_template($template_code);
+if (isset($template_code)) {
+  echo '&nbsp;<input id=flipTemplate type=button value="Hide" onclick="flipTemplateVisible()" />';
+}
+?>
+</td>
+</tr>
+<?php template_form($template_code, $template); ?>
+<tr>
+<td colspan=2>
+<textarea id="editor1" name="editor1" width="100" rows="6"><?php echo htmlspecialchars($content); ?></textarea>
+<?php enterJavascript(); ?>
+  createEditor('editor1', true, '<?php echo $mylanguage; ?>', false);
+<?php exitJavascript(); ?>
+
+<?php
+$query = 
+'select t1.forward, t1.annotation_id
+ from (select 1 as forward, annotation_id
+         from duplicates
+        where was_annotation_id = ' . $sql_annotation_id . '
+        union all
+       select 0 as forward, was_annotation_id as annotation_id
+         from duplicates
+        where annotation_id = ' . $sql_annotation_id . '
+      ) t1,
+      annotations t2
+where t2.annotation_id = t1.annotation_id
+  and t2.annotation_deleted is null';
+
+$ret = DBquery($query);
+if (!$ret) {
+  goto close;
+}
+for ($cnt = 0; $row = DBfetch($ret); ++$cnt) {
+  if ($cnt == 0) {
+    echo '
+<tr><td align=right>Similar:</td><td>
+<select name="similar" onchange="form_submit()">
+<option value=""></option>';
+  }
+  $id           = $row['annotation_id'];
+  $forward      = $row['forward'];
+  echo '
+<option value="', $id,'">';
+  switch ($forward) {
+  case 0:
+    echo 'Duplicated from ', $id;
+    break;
+  case 1:
+    echo 'Duplicated as ', $id;
+    break;
+  }
+  echo '</option>';
+}
+$query = 
+'select t1.forward, t1.annotation_id, t1.name
+ from (select 1 as forward, annotation_id, name
+         from translates,languages
+        where was_annotation_id = ' . $sql_annotation_id . '
+          and languages.language_code = translates.language_code
+        union all
+       select 0 as forward, was_annotation_id as annotation_id, name
+         from translates,languages
+        where annotation_id = ' . $sql_annotation_id . '
+          and languages.language_code = translates.was_language_code
+      ) t1,
+       annotations t2
+ where t1.annotation_id = t2.annotation_id
+   and t2.annotation_deleted is null';
+
+$ret = DBquery($query);
+if (!$ret) {
+  goto close;
+}
+for (; $row = DBfetch($ret); ++$cnt) {
+  if ($cnt == 0) {
+    echo '
+<tr><td align=right>Similar:</td><td>
+<select name="similar" onchange="form_submit()">
+<option value=""></option>';
+  }
+  $id           = $row['annotation_id'];
+  $forward      = $row['forward'];
+  echo '
+<option value="', $id,'">';
+  switch ($forward) {
+  case 0:
+    echo 'Translated from ', $id, ' in ', $row['name'];
+    break;
+  case 1:
+    echo 'Translated to ', $id, ' in ', $row['name'];
+    break;
+  }
+  echo '</option>';
+}
+$query = 
+'select t1.annotation_id
+  from annotationsofurls t1,
+       annotations t2
+ where t1.citation_id   = ' . $sql_annotation_id . '
+   and t1.annotation_id = t2.annotation_id
+   and t2.annotation_deleted is null';
+
+$ret = DBquery($query);
+if (!$ret) {
+  goto close;
+}
+for (; $row = DBfetch($ret); ++$cnt) {
+  if ($cnt == 0) {
+    echo '
+<tr><td align=right>Similar:</td><td>
+<select name="similar" onchange="form_submit()">
+<option value=""></option>';
+  }
+  $id           = $row['annotation_id'];
+  echo '
+<option value="', $id,'">
+Target of annotation ', $id, '
+</option>';
+}
+if ($cnt != 0) {
+  echo '
+</select>
+</td>
+</tr>';
+}
+?>
+
+<tr>
+<td colspan=2>
+<input type="button" value="Save"   onclick="setDraft('S')" />
+<input type="button" value="Publish" onclick="setDraft('N')" />
+<input type="button" value="Preview" onclick='preview()'/>
+<input type="reset" value="Restart" onclick="reset_form()"/>
+<?php
+$setAnnotations = getSetAnnotations();
+if ($setAnnotations != null) {
+  $size = count($setAnnotations);
+  if ($size > 1) {
+    if ($annotation_id != $setAnnotations[$size-1]) {
+      echo '
+<input type="button" value="Next" onclick="clickNext()" />';
+    }
+    if ($annotation_id != $setAnnotations[0]) {
+      echo '
+<input type="button" value="Prev" onclick="clickPrev()" />';
+    }
+    echo '
+<input type="button" value="Goto" onclick="clickGoto()" />';
+  }
+}
+?>
+<?php
+if (!isset($annotation_deleted)) {
+?>
+<input type="button" value="Delete" onclick='clickDelete()' />
+<input type="button" value="Duplicate" onclick='clickDuplicate()' />
+<input type="button" value="Translate" onclick='clickTranslate()' />
+<?php
+}
+?>
+<!--<input type="button" id="fullWidthButton" style="display:none" value="Full Frame" onclick="toggle_frames()" />-->
+</td>
+</tr>
+</table>
+</form>
+
+<?php
+
+$tab = getparameter('tab');
+echo '
+<form id="load_left" name="load_left" method="post" target="imageFrame" action="images.php">
+<input type=hidden name=loaded value=y />';
+hidden('tab');
+echo '
+</form>';
+
+close:
+DBcommit();
+DBclose();
+done:
+bodyFooterFilename();
+?>
+</body>
+</html>

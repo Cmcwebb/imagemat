@@ -1,0 +1,72 @@
+@charset "UTF-8";
+/* CSS Document */
+
+#splitpane {
+	position: relative;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+    width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	vertical-align: top;
+}
+
+
+/* imageFrame is the iframe to be used for the image - located on the left side of the page
+*/
+.imageFrame {
+	z-index: 1;
+	position: absolute;
+	background-color: #ffffff;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 42%;
+    height: 95%;
+    margin: 0;
+    border: 1;
+	overflow: auto;
+	vertical-align: top;
+}
+
+.hidden {
+   display: none;
+}
+
+.annotateFrame {
+	position: relative;
+	background-color: #ffffff;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 44%;
+	height: 95%;
+    margin-left: 46%;
+	top: 0px;
+    border: 1;
+	overflow: auto;
+}
+
+.fullFrame {
+	position: absolute;
+	background-color: #ffffff;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	height: 100%;
+    left: 0px;
+	top: 0px;
+	border: 1;
+}
+
+image {
+    position: relative;
+    width: 98%;
+    height: 100%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+	background-color: #ffffff;
+	overflow: scroll;
+	
+}
+

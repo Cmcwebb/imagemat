@@ -1,0 +1,113 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/*body {
+	font: 100% Tahoma, Geneva, sans-serif;
+	color: #333;
+	margin: 0; 
+	padding: 0;
+	height: 100%;
+	background-color: #ffffff;
+}
+*/
+p {
+	overflow: auto;
+	background-color: #ffffff;
+}
+
+#searchFrame {
+	position: relative;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	background-color: #fff;
+    width: 90%;
+	height: 90%;
+	margin: 0;
+	padding: 0;
+	vertical-align: top;
+}
+/*	border: 0;
+	background-color: #ffffff;
+	padding: 0;
+	font-size: 14px;
+	scrolling: yes;
+}*/
+
+#searchTable {
+	position: relative;
+	font-family: Tahoma, Geneva, sans-serif;
+	background-color: #fff;
+	margin: 0;
+	cellspacing: 0;
+	width: 90%;
+	overflow: scroll;
+	border-collapse: collapse;
+	border: 1px solid ##e1e1e1;
+}
+
+#tbodySearch {
+	display: block;
+	margin: -1px;
+}
+
+/* controls ID cells */
+.tdSearch1 {
+	text-align: right;
+	padding-right: 5px;
+	width: 25px;
+}
+
+
+
+/* controls Version cell */
+.tdSearch2 {
+	text-align: right;
+	padding-right: 5px;
+	width: 75px;
+}
+/* controls Template type cell */
+.tdSearch3 {
+	text-align: right;
+	padding-right: 10px;
+	}
+
+/* controls Title cell */
+.tdSearch4 {
+	text-align: left;
+	padding-left: 10px;
+	padding-right: 10px;
+	max-width: 300px;
+}
+
+/* controls Creator cell */
+.tdSearch5 {
+	text-align: right;
+	padding-right: 10px;
+}
+
+/* controls Created cell */
+.tdSearch6 {
+	text-align: right;
+	padding-right: 10px;
+}
+
+/* controls Modifier cell */
+.tdSearch7 {
+	text-align: right;
+	padding-right: 10px;
+}
+
+/* controls Modified cell */
+.tdSearch8 {
+	text-align: right;
+}
+
+/* controls odd row color */
+.odd  {  
+	background-color: #ebebeb;  
+}  
+
+/* controls even row color */
+.even {  
+	background-color: #fff; 
+} 

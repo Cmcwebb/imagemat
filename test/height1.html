@@ -1,0 +1,126 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Test Full window content with fixed with headed/footer</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<style type="text/css" media="screen">
+
+* { 
+  margin: 0; 
+}
+html { 
+  height: 100%; 
+  background-color:yellow;
+}
+
+body { 
+  height: 100%; 
+  background-color:green;
+}
+
+#wrapper { 
+  min-height: 100%;
+  height:     auto;
+  height:     100%;
+  margin:     0 auto -44px; /* -44px being the size of the footer */
+  background-color: blue;
+}
+
+#header { 
+  height: 86px; 
+  background-color: red;
+}      
+
+#content {
+  max-height: 100%;
+  overflow: auto;
+  background-color: lightblue;
+  bottom: 0;
+}
+
+#push { 
+  height: 0px;
+  background-color: white;
+  bottom: 0;
+}
+#footer { 
+  height: 44px;
+  background-color: orange;
+}
+</style>
+</head>
+<body>
+<div id="wrapper">
+  <div id="header"><h1>header</h1></div>
+  <div id="content"><h1>content</h1>
+This solution is from <a href="http://stackoverflow.com/questions/90178/make-a-div-fill-the-remaining-screen-space">http://stackoverflow.com/questions/90178/make-a-div-fill-the-remaining-screen-space</a>
+but this
+<a href="http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier">http://blog.stevensanderson.com/2011/10/05/full-height-app-layouts-a-css-trick-to-make-it-easier</a>
+might also be useful.
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+<p>
+Stuff
+</div>
+  <div id="push"><h1>push</h1></div>     
+</div>
+<div id="footer"><h1>footer</h1></div>
+</body>
+</html> 

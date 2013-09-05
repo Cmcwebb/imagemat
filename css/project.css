@@ -1,0 +1,95 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/*p {
+	overflow: auto;
+	background-color: #ffffff;
+}*/
+
+#projectFrame {
+	position: relative;
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	background-color: #ffffff;
+    width: 90%;
+	height: 90%;
+	margin: 0;
+	padding: 0;
+	vertical-align: top;
+	overflow: scroll;
+}
+
+.projectText {
+	width: 45%;
+	padding: 5px;
+	position: absolute;
+	margin-left: 10%;
+}
+.projectText p {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 13px;
+	color: #333;
+	word-wrap: normal;
+	display: block;
+}
+
+.projectText h2 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 16px;
+	font-style: strong;
+	
+}
+
+.projectText h3 {
+	font-family: Tahoma, Geneva, sans-serif;
+	color: #333;
+	width: 100%;
+	font-size: 14px;
+	font-style: italic;
+	
+}
+
+.projectText a:link {
+	text-decoration: none;
+	color: #333;
+}
+
+.projectText a:hover {
+	color: #C00;
+}
+
+
+.projectText a:visited {
+	text-decoration: none;
+	color: #333;
+}
+
+.projectText a:active {
+	text-decoration: none;
+	color: #333;
+}
+
+/* Table structure elements for Create Project */
+#projectTable {
+	border: 0; 
+	cellpadding: 0;
+	cellspacing: 0;
+	font-family: Tahoma, Geneva, sans-serif;
+	width: 800px;
+}
+
+.projectTable label	{
+	border: 0;
+	text-align: right;
+	width: 200px;
+	}
+
+.projectTable field	{
+	width: 400px;
+	border: 0;
+	color: #fff;
+	align: left;
+
+}

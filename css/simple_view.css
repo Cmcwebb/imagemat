@@ -1,0 +1,55 @@
+@charset "UTF-8";
+/* CSS Document */
+
+/* I hope this will manage the header section of the page, with state and annotation title 
+#simpleHeader	{
+	position: absolute;
+	font-family: Tahoma, Geneva, sans-serif;
+	margin-left: 20px;
+}
+*/
+	
+
+/* Controls Update annotation table */
+.simpleTable {
+	position: relative;
+	font-family: Tahoma, Geneva, sans-serif;
+	width: 100%;
+	margin-left: 20px;
+	margin-right: 50px;
+	cellspacing: 0;
+	border-collapse: collapse;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+
+
+/* controls category cells */
+.tdSimple1 {
+	text-align: left;
+	padding-right: 5px;
+	font-weight: bold;
+	font-size: 12px;
+	min-width: 30%;
+}
+
+/* controls annotation information cell */
+.tdSimple2 {
+	text-align: left;
+	padding-right: 5px;
+	font-size: 12px;
+	min-width: 70%;
+}
+
+/* controls annotation gutter */
+.tdSimple3 {
+	min-width: 30%;
+}
+
+/* controls annotation text */
+.tdSimple4 {
+	text-align: left;
+	font-size: 14px;
+	padding-right: 20px;
+}

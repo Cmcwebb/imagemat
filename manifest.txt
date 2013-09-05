@@ -1,0 +1,16 @@
+index.html -- arbitrary page
+annotate -- creation, update, searching of annotations
+css      -- style sheets
+error    -- error pages
+folder   -- obsolete
+images   -- jpegs etc used by imagemat
+include  -- php include files
+info     -- php scripts used by mediawiki
+js       -- javascript include files
+markup   -- svg markup software
+project  -- software for project management
+register -- software for registration
+test     -- tests of various shapes and forms
+tools    -- A symlink to a static tools directory
+vetting  -- vetting software
+group    -- Management of groups

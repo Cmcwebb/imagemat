@@ -1,0 +1,11 @@
+
+function clientstime($time)
+{
+  $date = date_create($time . 'Z') ;
+  #$date = date_create($time, timezone_open('GMT+0')) ;
+  if (isset($_SESSION['imageMAT_tz'])) {
+    $date->add($_SESSION['imageMAT_tz']);
+  }
+  return $date->format('Y-m-d H:i:s (l)');
+}
+

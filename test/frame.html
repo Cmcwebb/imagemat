@@ -1,0 +1,19 @@
+<html>
+<head>
+<title>Frame test</title>
+<script language="JavaScript" type="text/javascript">
+function loaded()
+{
+  alert('form loaded');
+}
+</script>
+</head>
+<body onload=loaded()>
+<iframe id="imageFrame" name="imageFrame" width="450" height="700" src="subframe.html"></iframe>
+
+<form action=subframe.html target=imageFrame method=post>
+<button type=submit>
+</form>
+
+</body>
+</html>

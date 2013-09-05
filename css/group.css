@@ -1,0 +1,15 @@
+.userid_ok {
+ background-color: white;
+ color: #000;
+}
+.userid_bad {
+  background-color: #C00;
+  color: white;
+}
+.member_cnt {
+  color: #000;
+}
+.nonmember_cnt {
+  color: #C00;
+}
+

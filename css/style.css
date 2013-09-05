@@ -1,0 +1,276 @@
+@charset "UTF-8";
+/* CSS Document */
+
+html
+{
+	height: 100%;
+}
+
+/* This is the outer dark gray box */
+body {
+	font-family: Tahoma, Geneva, sans-serif;
+	font-size: 12px;
+	padding-top: 35px;
+	padding-bottom: 36px;
+	padding-left: 100px;
+	background-color: #7F7F7F;
+	overflow-y: scroll; /*controls vertical scroll in frames*/
+	overflow-x: hidden; /*prevents horizontal scroll in frames*/
+
+}
+
+/* This is the inner container that holds the lighter gray background */
+#page {
+	width: 95%; /*controls light gray inner box width*/
+	height: 95%; /*controls light gray inner box height */
+	background-image: none;
+	border-width: 1px;
+	border-style: solid;
+	border-color: #000000;
+	background-color: #DDDDDD;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 20px 19px 50px;
+	position: relative;
+	overflow: auto;
+}
+
+/* This is the inner container for the search page */
+#searchBox {
+	width: 95%; /*controls light gray inner box width*/
+	height: 95%; /*controls light gray inner box height */
+	background-image: none;
+	background-color: #fff;
+	margin-left: auto;
+	margin-right: auto;
+	padding: 20px 19px 50px;
+	position: relative;
+}
+
+
+/* this ensures that background color in frame is white, and that the frames scroll - even though the body property is locked - to prevent double scrolling  */
+.frame {
+	background-color: #fff;
+}
+
+/* this is meant to override the body property that automatically makes background color the same as the body property */
+.background {
+	background-color: #fff;
+}
+
+/*This controls the background box color on grey pages */
+.backgroundBox {
+	background-color: #fff;
+	width: 90%;
+	height: 100%
+	border: 1px;
+	border-style:solid;
+	border-color: #000;
+	padding-left: 10px;
+	position: inherited;
+	overflow: auto;
+}		
+
+a:link {
+	color: #333;
+	text-decoration: none;
+}
+a:visited {
+	text-decoration: none;
+	color: #333;
+}
+a:hover {
+	text-decoration: none;
+	color: #900;
+}
+a:active {
+	text-decoration: none;
+	color: #333;
+}
+
+.pagewrap {
+	position:absolute;
+    top: 10px;
+	right: 10px;
+    bottom: 5px;
+	left: 10px;
+}
+
+.pagewrapdev {
+	position:absolute;
+    top: 10px;
+	right: 10px;
+    bottom: 5px;
+	left: 10px;
+    padding: 10px;
+}
+
+#header p {
+	font-size:16px;
+	margin: 40px 0 40px 0;
+}
+	
+#middle {
+	position:absolute;
+	width:100%;
+    top:150px;
+    bottom:0px;
+	left: 50px;
+	right: auto;
+    margin:0;
+	overflow: auto; /*ensures scroll in profile.php page*/
+}
+
+.error {
+	color: red;
+	font-weight: bold;
+}
+
+.fltrt { /* this class can be used to float an element right in your page. The floated element must precede the element it should be next to on the page. */
+	float: right;
+	margin-left: 8px;
+}
+.fltlft { /* this class can be used to float an element left in your page. The floated element must precede the element it should be next to on the page. */
+	float: left;
+	margin-right: 8px;
+}
+.clearfloat { /* this class should be placed on a div or break element and should be the final element before the close of a container that should fully contain a float */
+	clear:both;
+    height:0;
+    font-size: 1px;
+    line-height: 0px;
+}
+
+/***************************User topline ***********************************/
+#user {
+	font-family: Tahoma, Geneva, sans-serif;
+	margin: -15px 0 0 0;
+	font-size: 11px;
+	font-weight: regular;
+	padding: 0;
+	float: right;
+	z-index: -2;
+}
+
+/***************************Search invocation ******************************/
+#search {
+	float: right;
+	margin-top: 10px;
+	font-weight: bold;
+}
+
+/* Table structure elements for streamlined imageMAT navigation bar - 1 table with two rows & eight columns includes imageMAT logo */
+#navTable {
+	width: 100%;
+	float: left;
+	border-collapse: collapse;
+	border: 0; 
+	cellpadding: 0;
+	cellspacing: 0;
+}
+
+.td1	{
+	border: 0;
+	vertical-align: top;
+	height: 49px;
+}
+
+.td2	{
+	background-color: #981B1E;
+	width: 800px;
+	border: 0;
+	color: #fff;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	text-align: right;
+
+}
+
+.td3	{
+	background-color: #981B1E;
+	color: #fff;
+	font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+	font-size: 14px;
+	text-align: center;
+	height: 43px;
+	width: 200px;
+	border: 0;
+}
+
+.td3:hover {
+	background-color: #c0b874; 
+}
+
+.td4	{
+	height: 10px;
+	background-color: #dddddd;
+}
+	
+.td3 a:link {
+	color: #fff;
+	text-decoration: none;
+}
+.td3 a:visited {
+	text-decoration: none;
+	color: #fff;
+}
+.td3 a:hover {
+	text-decoration: none;
+	color: #900;
+}
+.td3 a:active {
+	text-decoration: none;
+	color: #fff;
+}
+
+.clearFloat {
+	clear: both;
+	margin: 0;
+	padding: 0;
+}
+
+#footer {
+	clear: both;
+	text-align:center;
+	font-size:9px;
+	padding: 30px 0 0 0;
+	margin: 0;
+}
+
+#floatdiv {
+  border: 0;
+  position: fixed;
+  top: 120px;
+  right: 75px;
+  background:#ffffff;   
+  border:2px solid #2266AA;   
+  z-index:100;
+}
+
+.transparent {
+  color: #ff0000;
+  background-color: #cccccc;
+}
+
+.transparentdev {
+  color: #ff0000;
+  background-color: #e0ffff;
+}
+
+.folderbar {
+  width: 22px;
+  height: 22px;
+}
+
+.foldericon {
+  width: 24px;
+  height: 18px;
+  margin-right:6px;
+}
+
+.copyright {
+	color: #333;
+	font-size: 12px;
+	text-align: center;
+}
+

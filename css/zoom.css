@@ -1,0 +1,89 @@
+﻿#zoom_panel {
+	margin-top: 0px;
+}
+
+#zoom_panel div.toolset,
+#zoom_panel div.toolset > * {
+	float: left;
+}
+
+#zoom_panel div.toolset {
+	height: 34px;
+}
+
+#inputZoom {
+	text-align:right;
+}
+
+#zoom_panel span.zoom_tool {
+	line-height: 26px;
+	padding: 3px;
+}
+
+#zoom_panel .dropdown {
+	position: relative;
+}
+
+#zoom_panel .dropdown button {
+	width: 15px;
+	height: 21px;
+	margin: 6px 0 0 1px;
+	padding: 0;
+	border-left: 1px solid #FFFFFF;
+	border-top: 1px solid #FFFFFF;
+	border-right: 1px solid #808080;
+	border-bottom: 1px solid #808080;
+	background-color: #E8E8E8;
+}
+
+#zoom_panel .dropdown button.down {
+	border-left: 1px solid #808080;
+	border-top: 1px solid #808080;
+	border-right: 1px solid #FFFFFF;
+	border-bottom: 1px solid #FFFFFF;
+	background-color: #B0B0B0;
+}
+
+.hideZoomList {
+	display: none;
+}
+
+.showZoomList {
+	list-style: none;
+	position: absolute;
+	overflow: visible;
+	margin: 0;
+	padding: 0;
+	left: 0px;
+	top: 20px;
+	bottom: 35px;
+	z-index: 4;
+	display: inline;
+}
+
+#zoom_panel .dropdown li {
+	display: block;
+	width: 160px;
+	padding: 4px;
+	background: #E8E8E8;
+	border: 1px solid #B0B0B0;
+	margin: 0 0 -1px 0;
+	line-height: 16px;
+}
+
+#zoom_panel .dropdown li:hover {
+	background-color: #FFC;
+}
+
+#zoom_panel .dropdown li.special {
+	padding: 10px 4px; 
+}
+
+#zoom_panel .dropdown li.special:hover {
+	background: #FFC;
+}
+
+#font_family_dropdown li {
+	font-size: 1.4em;
+}
+
